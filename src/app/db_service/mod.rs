@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use axum::response::IntoResponse;
 use sqlx::{postgres::PgPoolOptions, PgPool};
-
+pub mod user;
 
 pub async fn get_connection_pool() -> Result<PgPool, DbError> {
     let db_connection_string = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
