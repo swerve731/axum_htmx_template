@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydb # Initial database name
+      POSTGRES_DB: myahp # Initial database name
       DATABASE_URL: "postgres://myuser:mypassword@localhost/myahp" # Added DATABASE_URL
     ports:
       - "5432:5432" # Maps host port 5432 to container port 5432
