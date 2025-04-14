@@ -1,0 +1,23 @@
+# version: '3.8'
+services:
+  
+  db:
+    image: postgres:16 # You can specify a version, e.g., postgres:14
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydb # Initial database name
+      DATABASE_URL: "postgres://myuser:mypassword@localhost/myahp" # Added DATABASE_URL
+    ports:
+      - "5432:5432" # Maps host port 5432 to container port 5432
+    volumes:
+      - db_data:/var/lib/postgresql/data # Persist data across restarts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data: # Named volume for PostgreSQL data
