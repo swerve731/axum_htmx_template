@@ -88,8 +88,7 @@ impl App {
         let app = Router::new()
             .merge(self.view_router(self.state.clone()))
             .nest("/api", self.api_router(self.state.clone()))
-            .with_state(self.state.clone())
-            .nest_service("/assets", ServeDir::new("assets"))
+            
             .layer(Self::cors_layer(&app_origin))
             .layer(
                 TraceLayer::new_for_http()
@@ -108,7 +107,9 @@ impl App {
                             some_other_field = tracing::field::Empty,
                         )
                     })
-                );
+            )
+            .with_state(self.state.clone())
+            .nest_service("/assets", ServeDir::new("assets"));
 
         
         let listener = tokio::net::TcpListener::bind(&bind_address).await?; 
@@ -123,7 +124,8 @@ impl App {
 
     fn cors_layer(origin: &str) -> tower_http::cors::CorsLayer {
         CorsLayer::new()
-           .allow_origin(origin.parse::<axum::http::HeaderValue>().unwrap())
+            .allow_origin(tower_http::cors::Any)
+        //    .allow_origin(origin.parse::<axum::http::HeaderValue>().unwrap())
            .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE]) // Allow common methods
            .allow_headers([CONTENT_TYPE, AUTHORIZATION]) // Allow common headers
     }

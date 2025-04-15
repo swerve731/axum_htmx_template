@@ -8,7 +8,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::app::auth_service::error::AuthError;
 
-
 impl<S> FromRequestParts<S> for Claims
 where
     S: Send + Sync,
@@ -30,13 +29,13 @@ where
 }
 
 #[derive(Debug, Serialize)]
-struct AuthBody {
+pub struct AuthBody {
     access_token: String,
     token_type: String,
 }
 
 impl AuthBody {
-    fn new(access_token: String) -> Self {
+    pub fn new(access_token: String) -> Self {
         Self {
             access_token,
             token_type: "Bearer".to_string(),

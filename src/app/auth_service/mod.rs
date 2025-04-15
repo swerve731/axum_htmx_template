@@ -18,6 +18,8 @@ impl WebService for AuthService {
 
     fn api_router(&self, state: super::AppState) -> axum::Router<super::AppState> {
         axum::Router::new()
+            .route("/login", get(api::login_user))
+            .route("/register", get(api::register_user))
             .with_state(state.clone())
     }
 }

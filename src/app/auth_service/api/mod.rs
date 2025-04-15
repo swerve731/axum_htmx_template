@@ -1,7 +1,7 @@
 use std::sync::LazyLock;
 pub mod jwt;
 
-use jwt::{KEYS, Claims};
+use jwt::{AuthBody, Claims, KEYS};
 use argon2::{
     password_hash::{
         rand_core::OsRng,
@@ -9,7 +9,7 @@ use argon2::{
     },
     Argon2
 };
-use axum::{extract::{FromRequestParts, State}, response::IntoResponse, Form};
+use axum::{extract::{FromRequestParts, State}, response::IntoResponse, Form, Json};
 use jsonwebtoken::{DecodingKey, EncodingKey};
 use serde::{Deserialize, Serialize};
 use sqlx::database;
@@ -62,7 +62,7 @@ pub fn is_valid_email(email: &str) -> Result<bool, AuthError> {
     Err(AuthError::InvalidEmail)
 }
 
-pub async fn register_user(State(state): State<AppState>, Form(user_data): Form<RegisterUser>) -> Result<(), AuthError> {
+pub async fn register_user(State(state): State<AppState>, Form(user_data): Form<RegisterUser>) -> Result<Json<AuthBody>, AuthError> {
     is_valid_email(&user_data.email)?;
     is_valid_password(&user_data.password)?;
 
@@ -98,7 +98,64 @@ pub async fn register_user(State(state): State<AppState>, Form(user_data): Form<
     )?;
     
 
-    todo!();
+    Ok(
+        Json(
+            AuthBody::new(token)
+        )
+    )
 }   
+
+
+#[derive(serde::Deserialize)]
+pub struct LoginUser {
+    pub email: String,
+    pub password: String,
+}
+
+pub async fn login_user(State(state): State<AppState>, Form(user_data): Form<LoginUser>) -> Result<Json<AuthBody>, AuthError> {
+    is_valid_email(&user_data.email)?;
+
+    let user = get_user_by_email(&user_data.email, &state.pool).await?.unwrap_or(
+        return Err(AuthError::UserNotFound)
+    );
+
+    
+    let correct_password = user.password_hash;
+    let password = user_data.password.as_bytes();
+    let parsed_hash = PasswordHash::new(&correct_password)?;
+    let res = Argon2::default().verify_password(password, &parsed_hash);
+
+    match res {
+        Ok(_) => { 
+            let claims = Claims {
+                user_id: user.id.to_string(),
+                exp: Claims::EXP_TIME,
+            };
+        
+            let token = jsonwebtoken::encode(
+                &jsonwebtoken::Header::default(), 
+                &claims, &KEYS.encoding
+            )?;
+            
+            return Ok(
+                Json(
+                    AuthBody::new(token)
+                )
+            );
+        },
+        Err(err) => { 
+            match err {
+                argon2::password_hash::Error::Password => {
+                    return Err(AuthError::WrongPassword);
+                },
+                _ => {
+                    return Err(AuthError::PasswordHashing(err));
+                }
+            }
+         }
+            
+    }
+
+}
 
 

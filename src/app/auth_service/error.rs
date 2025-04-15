@@ -1,6 +1,4 @@
 use axum::response::IntoResponse;
-use serde::Serialize;
-
 
 #[derive(derive_more::From, Debug)]
 pub enum AuthError {
@@ -22,6 +20,8 @@ pub enum AuthError {
     #[from]
     Jwt(jsonwebtoken::errors::Error),
 
+    #[from]
+    PasswordHashing(argon2::password_hash::Error),
 
 }
 
@@ -83,7 +83,13 @@ impl IntoResponse for AuthError {
                 let status = axum::http::StatusCode::UNAUTHORIZED;
                 let body = "Invalid token try signing back in".to_string();
                 (status, body)
-            }
+            },
+            AuthError::PasswordHashing(err) => {
+                let status = axum::http::StatusCode::INTERNAL_SERVER_ERROR;
+                tracing::error!("URGENT: Password hashing error: {:?}", err);
+                let body = format!("Unkown Server Error");
+                (status, body)
+            },
         };
 
         (status, body).into_response()
