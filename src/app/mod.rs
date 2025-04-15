@@ -1,7 +1,7 @@
 pub mod auth_service;
 pub mod db_service;
 pub mod error;
-
+pub mod smtp_service;
 use axum::{
     extract::MatchedPath,
     http::{
@@ -12,6 +12,7 @@ use axum::{
 };
 use db_service::get_connection_pool;
 use error::AppError;
+use smtp_service::SmtpService;
 use tower_http::{
     cors::CorsLayer,
     services::ServeDir,
@@ -33,12 +34,14 @@ pub trait WebService {
 #[derive(Clone)]
 pub struct AppState {
     pub pool: sqlx::PgPool,
+    pub smtp_service: smtp_service::SmtpService,
 }
 
 impl AppState {
     pub async fn default() -> Self {
         let pool = get_connection_pool().await.expect("Failed to create connection pool");
-        AppState { pool }
+        let smtp_service = smtp_service::SmtpService::from_env();
+        AppState { pool, smtp_service }
     }
 }
 
@@ -143,6 +146,8 @@ impl App {
         .with(tracing_subscriber::fmt::layer())
         .init();
     }
+
+
    
 }
 

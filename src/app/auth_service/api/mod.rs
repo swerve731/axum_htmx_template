@@ -32,7 +32,7 @@ pub async fn register_user(State(state): State<AppState>, Form(user_data): Form<
     let argon2 = argon2::Argon2::default();
     let password = user_data.password.as_bytes();
     let salt = SaltString::generate(&mut OsRng);
-    let password_hash = argon2.hash_password(password, &salt).unwrap().to_string();
+    let password_hash = argon2.hash_password(password, &salt)?.to_string();
 
     let id = sqlx::types::uuid::Uuid::new_v4();
 
@@ -61,11 +61,7 @@ pub async fn register_user(State(state): State<AppState>, Form(user_data): Form<
     )?;
     
 
-    Ok(
-        Json(
-            AuthBody::new(token)
-        )
-    )
+    Ok(Json(AuthBody::new(token)))
 }   
 
 
@@ -89,28 +85,86 @@ pub async fn login_user(State(state): State<AppState>, Form(user_data): Form<Log
     let correct_password = user.password_hash;
     let password = user_data.password.as_bytes();
     let parsed_hash = PasswordHash::new(&correct_password)?;
-    let res = Argon2::default().verify_password(password, &parsed_hash)?;
+    let res = Argon2::default().verify_password(password, &parsed_hash);
 
     
-    let claims = Claims {
-        user_id: user.id.to_string(),
-        exp: Claims::EXP_TIME,
-    };
-
-    let token = jsonwebtoken::encode(
-        &jsonwebtoken::Header::default(), 
-        &claims, &KEYS.encoding
-    )?;
-    
-    return Ok(
-        Json(
-            AuthBody::new(token)
-        )
-    );
-
-    
+    match res {
+        Ok(_) => {
+            let claims = Claims {
+                user_id: user.id.to_string(),
+                exp: Claims::EXP_TIME,
+            };
+        
+            let token = jsonwebtoken::encode(
+                &jsonwebtoken::Header::default(), 
+                &claims, &KEYS.encoding
+            )?;
+            
+            return Ok(
+                Json(
+                    AuthBody::new(token)
+                )
+            );
+        },
+        Err(e) => match e {
+            argon2::password_hash::Error::Password => return Err(AuthError::WrongPassword),
+            _ => return Err(AuthError::PasswordHashing(e)),
+        },
+        
+    }
 }
 
 
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use sqlx::PgPool;
 
+    #[sqlx::test]
+    async fn test_register_user(pool: PgPool) -> Result<(), AuthError> {
+        let default_state = AppState::default().await;
+        let state = AppState { pool: pool.clone(), smtp_service: default_state.smtp_service.clone() };
+        let user_data = RegisterUser {
+            name: "Test User".to_string(),
+            email: "test@example.com".to_string(),
+            password: "Password123!".to_string(),
+        };
+
+        let result = register_user(State(state.clone()), Form(user_data)).await;
+        assert!(result.is_ok());
+
+        let user = get_user_by_email("test@example.com", &state.pool).await?;
+        assert!(user.is_some());
+
+        let user = user.unwrap();
+        assert_eq!(user.email, "test@example.com");
+        assert_eq!(user.name, "Test User");
+
+        Ok(())
+    }
+
+    #[sqlx::test]
+    async fn test_login_user(pool: PgPool) -> Result<(), AuthError> {
+        let default_state = AppState::default().await;
+        let state = AppState { pool: pool.clone(), smtp_service: default_state.smtp_service.clone() };
+        let user_data = RegisterUser {
+            name: "Test User".to_string(),
+            email: "test_login@example.com".to_string(),
+            password: "Password123!".to_string(),
+        };
+
+        let result = register_user(State(state.clone()), Form(user_data)).await;
+        assert!(result.is_ok());
+
+        let login_data = LoginUser {
+            email: "test_login@example.com".to_string(),
+            password: "Password123!".to_string(),
+        };
+
+        let result = login_user(State(state.clone()), Form(login_data)).await;
+        assert!(result.is_ok());
+
+        Ok(())
+    }
+}
