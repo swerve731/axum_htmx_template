@@ -29,8 +29,6 @@ impl SmtpService {
                 .parse::<u16>()
                 .expect("SMTP_PORT must be a valid u16"),
         std::env::var("SMTP_SENDER_NAME").expect("SMTP_FROM_NAME must be set"),
-
-
         )
     }
 
