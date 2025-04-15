@@ -148,6 +148,7 @@ mod tests {
     async fn test_login_user(pool: PgPool) -> Result<(), AuthError> {
         let default_state = AppState::default().await;
         let state = AppState { pool: pool.clone(), smtp_service: default_state.smtp_service.clone() };
+        
         let user_data = RegisterUser {
             name: "Test User".to_string(),
             email: "test_login@example.com".to_string(),
