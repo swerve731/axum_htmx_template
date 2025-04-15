@@ -13,7 +13,6 @@ use axum::{
 };
 use db_service::get_connection_pool;
 use error::AppError;
-use smtp_service::SmtpService;
 use tower_http::{
     cors::CorsLayer,
     services::ServeDir,
@@ -56,6 +55,7 @@ pub struct App {
 impl WebService for App {
     fn view_router(&self, state: AppState) -> axum::Router<AppState> {
         let router = Router::new()
+            .merge(user_service::UserService{}.view_router(state.clone()))
             .nest("/auth", self.auth_service.view_router(state.clone()))
             .with_state(state.clone());
 
@@ -64,6 +64,7 @@ impl WebService for App {
     
     fn api_router(&self, state: AppState) -> axum::Router<AppState> {
         let router = Router::new()
+            .merge(user_service::UserService{}.api_router(state.clone()))
             .nest("/auth", self.auth_service.api_router(state.clone()));
 
         router
