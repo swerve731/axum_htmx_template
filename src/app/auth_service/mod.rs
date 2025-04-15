@@ -3,6 +3,7 @@ use axum::{response::IntoResponse, routing::get};
 use super::WebService;
 pub mod templates;
 pub mod error;
+pub mod api;
 
 #[derive(Clone)]
 pub struct AuthService {}
@@ -26,3 +27,4 @@ impl AuthService {
         AuthService {}
     }
 }
+

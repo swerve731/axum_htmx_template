@@ -1,8 +1,9 @@
+pub mod user;
+
 use std::time::Duration;
 
 use axum::response::IntoResponse;
 use sqlx::{postgres::PgPoolOptions, PgPool};
-pub mod user;
 
 pub async fn get_connection_pool() -> Result<PgPool, DbError> {
     let db_connection_string = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
@@ -24,6 +25,8 @@ pub enum DbError {
 
 impl IntoResponse for DbError {
     fn into_response(self) -> axum::response::Response {
+        tracing::error!("DbError: {:?}", self);
+
         let status = axum::http::StatusCode::INTERNAL_SERVER_ERROR;
 
         let body = format!("Database error: {:?}", self);
