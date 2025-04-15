@@ -77,48 +77,38 @@ pub struct LoginUser {
 }
 
 pub async fn login_user(State(state): State<AppState>, Form(user_data): Form<LoginUser>) -> Result<Json<AuthBody>, AuthError> {
-    is_valid_email(&user_data.email)?;
+    // is_valid_email(&user_data.email)?;
 
-    let user = get_user_by_email(&user_data.email, &state.pool).await?.unwrap_or(
-        return Err(AuthError::UserNotFound)
-    );
-
+    let user = match get_user_by_email(&user_data.email, &state.pool).await {
+        Ok(Some(user)) => user,
+        Ok(None) => return Err(AuthError::UserNotFound),
+        Err(_) => return Err(AuthError::Sqlx(sqlx::Error::RowNotFound)),
+    };
+    
     
     let correct_password = user.password_hash;
     let password = user_data.password.as_bytes();
     let parsed_hash = PasswordHash::new(&correct_password)?;
-    let res = Argon2::default().verify_password(password, &parsed_hash);
+    let res = Argon2::default().verify_password(password, &parsed_hash)?;
 
-    match res {
-        Ok(_) => { 
-            let claims = Claims {
-                user_id: user.id.to_string(),
-                exp: Claims::EXP_TIME,
-            };
-        
-            let token = jsonwebtoken::encode(
-                &jsonwebtoken::Header::default(), 
-                &claims, &KEYS.encoding
-            )?;
-            
-            return Ok(
-                Json(
-                    AuthBody::new(token)
-                )
-            );
-        },
-        Err(err) => { 
-            match err {
-                argon2::password_hash::Error::Password => {
-                    return Err(AuthError::WrongPassword);
-                },
-                _ => {
-                    return Err(AuthError::PasswordHashing(err));
-                }
-            }
-         }
-            
-    }
+    
+    let claims = Claims {
+        user_id: user.id.to_string(),
+        exp: Claims::EXP_TIME,
+    };
+
+    let token = jsonwebtoken::encode(
+        &jsonwebtoken::Header::default(), 
+        &claims, &KEYS.encoding
+    )?;
+    
+    return Ok(
+        Json(
+            AuthBody::new(token)
+        )
+    );
+
+    
 }
 
 
