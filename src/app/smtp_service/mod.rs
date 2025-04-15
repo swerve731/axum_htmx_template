@@ -1,7 +1,7 @@
 use std::ops::Add;
 
 use lettre::{
-    message::{header::ContentType, Mailbox, MessageBuilder}, transport::smtp::{authentication::Credentials, commands::Mail}, Address, Message, SmtpTransport, Transport
+    message::{header::ContentType, Mailbox, MessageBuilder}, transport::smtp::{authentication::Credentials, commands::Mail, Error}, Address, Message, SmtpTransport, Transport
 };
 
 
@@ -16,21 +16,23 @@ pub struct SmtpService {
 
 
 impl SmtpService {
-    pub fn from_env() -> Self {
-        Self::new(
-            lettre::transport::smtp::authentication::Credentials::new(
-                std::env::var("SMTP_USERNAME").expect("SMTP_USERNAME must be set"),
-                std::env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD must be set"),
-            ),
-            std::env::var("SMTP_FROM_NO_REPLY").expect("SMTP_FROM_NO_REPLY must be set").parse::<Address>().expect("SMTP_FROM_NO_REPLY must be a valid email address"),
-            std::env::var("SMTP_HOST").expect("SMTP_HOST must be set"),
-            std::env::var("SMTP_PORT")
-                .expect("SMTP_PORT must be set")
-                .parse::<u16>()
-                .expect("SMTP_PORT must be a valid u16"),
-        std::env::var("SMTP_SENDER_NAME").expect("SMTP_FROM_NAME must be set"),
-        )
+    pub fn from_env() -> Result<Self, std::env::VarError> {
+        let credentials = Credentials::new(
+            std::env::var("SMTP_USERNAME")?,
+            std::env::var("SMTP_PASSWORD")?,
+        );
+        let noreply_email = std::env::var("SMTP_FROM_NO_REPLY")?
+            .parse::<Address>()
+            .map_err(|_| std::env::VarError::NotUnicode("SMTP_FROM_NO_REPLY is not valid address".into()))?;
+        let host = std::env::var("SMTP_HOST")?;
+        let port = std::env::var("SMTP_PORT")?
+            .parse::<u16>()
+            .map_err(|_| std::env::VarError::NotUnicode("SMTP_PORT is not u16".into()))?;
+        let sender_name = std::env::var("SMTP_SENDER_NAME")?;
+
+        Ok(Self::new(credentials, noreply_email, host, port, sender_name))
     }
+
 
     pub fn new(credentials: Credentials, noreply_email: Address, host: String, port: u16, sender_name: String) -> Self {
         SmtpService { 
@@ -43,8 +45,8 @@ impl SmtpService {
     }
 
 
-    pub fn send(&self, message: Message) -> Result<(), lettre::transport::smtp::Error>{
-        let relay = SmtpTransport::relay("live.smtp.mailtrap.io")?;
+    pub fn send(&self, message: Message) -> Result<(), Error>{
+        let relay = SmtpTransport::relay(&self.host)?;
 
         let mailer = relay.credentials(self.credentials.clone()).build();
         mailer.send(&message)?;
@@ -52,7 +54,7 @@ impl SmtpService {
         Ok(())
     } 
 
-    pub fn default_message_builder(&self) -> Result<MessageBuilder, lettre::transport::smtp::Error> {
+    pub fn default_message_builder(&self) -> Result<MessageBuilder, Error> {
         let builder = Message::builder()
             .from(Mailbox::new(Some(self.sender_name.clone()), self.noreply_email.clone()));
 

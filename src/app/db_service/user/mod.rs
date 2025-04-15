@@ -29,3 +29,15 @@ pub async fn get_user_by_email(email: &str, pool: &PgPool) -> Result<Option<User
 
     Ok(user)
 } 
+
+pub async fn get_user_by_id(id: sqlx::types::Uuid, pool: &PgPool) -> Result<Option<User>, sqlx::Error> {
+    let user = sqlx::query_as!(
+        User,
+        "SELECT id, name, email, created_at, password_hash FROM users WHERE id = $1",
+        id
+    )
+    .fetch_optional(pool)
+    .await?;
+
+    Ok(user)
+}

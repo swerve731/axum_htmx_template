@@ -2,6 +2,7 @@ pub mod auth_service;
 pub mod db_service;
 pub mod error;
 pub mod smtp_service;
+pub mod user_service;
 use axum::{
     extract::MatchedPath,
     http::{
@@ -40,7 +41,7 @@ pub struct AppState {
 impl AppState {
     pub async fn default() -> Self {
         let pool = get_connection_pool().await.expect("Failed to create connection pool");
-        let smtp_service = smtp_service::SmtpService::from_env();
+        let smtp_service = smtp_service::SmtpService::from_env().expect("Failed to start SMTP service");
         AppState { pool, smtp_service }
     }
 }
