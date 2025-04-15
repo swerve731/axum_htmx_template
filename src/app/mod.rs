@@ -1,30 +1,27 @@
-pub mod db_service;
 pub mod auth_service;
+pub mod db_service;
 pub mod error;
 
-use error::AppError;
-
 use axum::{
-    Router,
     extract::MatchedPath,
     http::{
-        Method,
-        Request,
         header::{AUTHORIZATION, CONTENT_TYPE},
+        Method, Request,
     },
+    Router,
 };
-
 use db_service::get_connection_pool;
+use error::AppError;
 use tower_http::{
-    classify::{ServerErrorsAsFailures, SharedClassifier}, cors::{self, CorsLayer}, services::ServeDir, trace::{DefaultMakeSpan, TraceLayer}
+    cors::CorsLayer,
+    services::ServeDir,
+    trace::TraceLayer,
 };
 use tracing::info_span;
 use tracing_subscriber::{
     layer::SubscriberExt,
     util::SubscriberInitExt,
 };
-
-
 
 pub trait WebService {
     fn view_router(&self, state: AppState) -> axum::Router<AppState>;
@@ -60,9 +57,10 @@ impl WebService for App {
 
         router
     }
+    
     fn api_router(&self, state: AppState) -> axum::Router<AppState> {
         let router = Router::new()
-            .merge(self.auth_service.api_router(state.clone()));
+            .nest("/auth", self.auth_service.api_router(state.clone()));
 
         router
     }
@@ -81,7 +79,6 @@ impl App {
     }
 
     pub async fn run_server(self) -> Result<(), AppError> {
-        let app_origin = std::env::var("APP_ORIGIN").expect("APP_ORIGIN must be set");
         let bind_address = std::env::var("BIND_ADDRESS").expect("BIND_ADDRESS must be set");
         Self::init_tracing();
         
@@ -89,7 +86,7 @@ impl App {
             .merge(self.view_router(self.state.clone()))
             .nest("/api", self.api_router(self.state.clone()))
             
-            .layer(Self::cors_layer(&app_origin))
+            .layer(Self::cors_layer())
             .layer(
                 TraceLayer::new_for_http()
                     .make_span_with(|request: &Request<_>| {
@@ -122,9 +119,11 @@ impl App {
         Ok(())
     }
 
-    fn cors_layer(origin: &str) -> tower_http::cors::CorsLayer {
+    pub fn cors_layer() -> tower_http::cors::CorsLayer {
+        let origin = std::env::var("APP_ORIGIN").expect("APP_ORIGIN must be set");
+
         CorsLayer::new()
-            .allow_origin(tower_http::cors::Any)
+            .allow_origin(origin.parse::<axum::http::HeaderValue>().expect("Failed to parse APP_ORIGIN"))
         //    .allow_origin(origin.parse::<axum::http::HeaderValue>().unwrap())
            .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE]) // Allow common methods
            .allow_headers([CONTENT_TYPE, AUTHORIZATION]) // Allow common headers

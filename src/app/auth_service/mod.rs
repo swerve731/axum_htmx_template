@@ -1,4 +1,4 @@
-use axum::{response::IntoResponse, routing::get};
+use axum::{response::IntoResponse, routing::{get, post}};
 
 use super::WebService;
 pub mod templates;
@@ -14,12 +14,13 @@ impl WebService for AuthService {
             .route("/login", get(|| async { templates::LoginTemplate{}.into_response() }))
             .route("/register", get(|| async { templates::RegisterTemplate{}.into_response() }))
             .with_state(state.clone())
+            .layer(super::App::cors_layer())
     }
 
     fn api_router(&self, state: super::AppState) -> axum::Router<super::AppState> {
         axum::Router::new()
-            .route("/login", get(api::login_user))
-            .route("/register", get(api::register_user))
+            .route("/login", post(api::login_user))
+            .route("/register", post(api::register_user))
             .with_state(state.clone())
     }
 }

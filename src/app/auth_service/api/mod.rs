@@ -1,22 +1,17 @@
-use std::sync::LazyLock;
 pub mod jwt;
+pub mod utils;
 
-use jwt::{AuthBody, Claims, KEYS};
 use argon2::{
-    password_hash::{
-        rand_core::OsRng,
-        PasswordHash, PasswordHasher, PasswordVerifier, SaltString
-    },
-    Argon2
+    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    Argon2,
 };
-use axum::{extract::{FromRequestParts, State}, response::IntoResponse, Form, Json};
-use jsonwebtoken::{DecodingKey, EncodingKey};
-use serde::{Deserialize, Serialize};
-use sqlx::database;
+use axum::{extract::{Form, State}, Json};
+use jwt::{AuthBody, Claims, KEYS};
+use utils::{is_valid_email, is_valid_password};
 
 use crate::app::{db_service::user::get_user_by_email, AppState};
 
-use super::{error::AuthError, AuthService};
+use super::error::AuthError;
 
 
 
@@ -28,39 +23,7 @@ pub struct RegisterUser {
 }
 
 
-pub fn is_valid_password(password: &str) -> Result<bool, AuthError> {
-    let min_length = 8;
-    let has_uppercase = password.chars().any(|c| c.is_uppercase());
-    let has_lowercase = password.chars().any(|c| c.is_lowercase());
-    let has_digit = password.chars().any(|c| c.is_digit(10));
-    let has_special_char = password.chars().any(|c| "!@#$%^&*()_+-=[]{}|;':\",.<>?/".contains(c));
 
-    if password.len() >= min_length && has_uppercase && has_lowercase && has_digit && has_special_char {
-        Ok(true)
-    } else {
-        Err(AuthError::InvalidPassword {
-            has_uppercase,
-            has_lowercase,
-            has_digit,
-            min_length,
-            is_long_enough: password.len() >= min_length,
-        })
-    }
-}
-
-pub fn is_valid_email(email: &str) -> Result<bool, AuthError> {
-    // without regex
-    let at = email.find('@');
-    let dot = email.rfind('.');
-    if let Some(at) = at {
-        if let Some(dot) = dot {
-            if at < dot && dot < email.len() - 1 {
-                return Ok(true);
-            }
-        }
-    } 
-    Err(AuthError::InvalidEmail)
-}
 
 pub async fn register_user(State(state): State<AppState>, Form(user_data): Form<RegisterUser>) -> Result<Json<AuthBody>, AuthError> {
     is_valid_email(&user_data.email)?;
@@ -104,6 +67,7 @@ pub async fn register_user(State(state): State<AppState>, Form(user_data): Form<
         )
     )
 }   
+
 
 
 #[derive(serde::Deserialize)]
@@ -155,7 +119,8 @@ pub async fn login_user(State(state): State<AppState>, Form(user_data): Form<Log
          }
             
     }
-
 }
+
+
 
 
