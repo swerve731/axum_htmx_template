@@ -70,9 +70,18 @@ pub async fn register_user(State(state): State<AppState>, Form(user_data): Form<
     );
 
     header_map.insert(
-        header::Redirect,
-        
-    )
+        header::HeaderName::from_static("HX-Redirect"),
+        header::HeaderValue::from_str("/dashboard").map_err(
+            |_| AuthError::InternalServer
+        )?
+    );
+
+    let response = http::Response::builder()
+        .status(StatusCode::OK)
+        .header(header::AUTHORIZATION, format!("Bearer {}", token))
+        .header(header::HeaderName::from_static("HX-Redirect"), "/dashboard")
+        .body("User registered successfully")
+        .map_err(|_| AuthError::InternalServer)?;
 
     todo!()
 }   
