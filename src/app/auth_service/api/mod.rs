@@ -5,7 +5,8 @@ use argon2::{
     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
 };
-use axum::{extract::{Form, State}, Json};
+use axum::{extract::{Form, State}, response::IntoResponse, Json};
+use http::{header, StatusCode};
 use jwt::{AuthBody, Claims, KEYS};
 use utils::{is_valid_email, is_valid_password};
 
@@ -25,7 +26,7 @@ pub struct RegisterUser {
 
 
 
-pub async fn register_user(State(state): State<AppState>, Form(user_data): Form<RegisterUser>) -> Result<Json<AuthBody>, AuthError> {
+pub async fn register_user(State(state): State<AppState>, Form(user_data): Form<RegisterUser>) -> Result<impl IntoResponse, AuthError> {
     is_valid_email(&user_data.email)?;
     is_valid_password(&user_data.password)?;
 
@@ -60,8 +61,20 @@ pub async fn register_user(State(state): State<AppState>, Form(user_data): Form<
         &claims, &KEYS.encoding
     )?;
     
+    let header_map = http::header::HeaderMap::new();
+    header_map.insert(
+        header::AUTHORIZATION,
+        header::HeaderValue::from_str(&format!("Bearer {}", token)).map_err(
+            |_| AuthError::InternalServer
+        )?
+    );
 
-    Ok(Json(AuthBody::new(token)))
+    header_map.insert(
+        header::Redirect,
+        
+    )
+
+    todo!()
 }   
 
 

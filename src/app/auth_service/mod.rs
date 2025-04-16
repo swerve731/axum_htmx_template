@@ -21,6 +21,7 @@ impl WebService for AuthService {
         axum::Router::new()
             .route("/login", post(api::login_user))
             .route("/register", post(api::register_user))
+            .layer(super::App::cors_layer())
             .with_state(state.clone())
     }
 }

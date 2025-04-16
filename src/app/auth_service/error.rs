@@ -23,6 +23,13 @@ pub enum AuthError {
     #[from]
     PasswordHashing(argon2::password_hash::Error),
 
+    #[from]
+    Axum(axum::Error),
+
+    #[from]
+    Http(http::Error),
+
+    InternalServer
 }
 
 impl IntoResponse for AuthError {
@@ -86,6 +93,21 @@ impl IntoResponse for AuthError {
             tracing::error!("URGENT: Password hashing error: {:?}", err);
             let body = format!("Unknown Server Error");
             (status, body)
+            },
+            AuthError::Axum(err) => {
+                let status = axum::http::StatusCode::INTERNAL_SERVER_ERROR;
+                let body = format!("Axum error: {:?}", err);
+                (status, body)
+            },
+            AuthError::Http(err) => {
+                let status = axum::http::StatusCode::INTERNAL_SERVER_ERROR;
+                let body = format!("HTTP error: {:?}", err);
+                (status, body)
+            },
+            AuthError::InternalServer => {
+                let status = axum::http::StatusCode::INTERNAL_SERVER_ERROR;
+                let body = "Internal server error".to_string();
+                (status, body)
             },
         };
 

@@ -1,8 +1,9 @@
 use std::sync::LazyLock;
 
-use axum::{extract::FromRequestParts, RequestPartsExt};
+use axum::{extract::{FromRequestParts, State}, response::IntoResponse, RequestPartsExt};
 use axum_extra::{TypedHeader, headers::{authorization::Bearer, Authorization}};
 use axum::http::request::Parts;
+use http::StatusCode;
 use jsonwebtoken::{decode, EncodingKey, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 
@@ -33,6 +34,7 @@ pub struct AuthBody {
     access_token: String,
     token_type: String,
 }
+
 
 impl AuthBody {
     pub fn new(access_token: String) -> Self {
