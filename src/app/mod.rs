@@ -3,16 +3,18 @@ pub mod db_service;
 pub mod error;
 pub mod smtp_service;
 pub mod user_service;
+pub mod templates;
+
+use askama::Template;
 use axum::{
-    extract::MatchedPath,
-    http::{
+    extract::MatchedPath, http::{
         header::{AUTHORIZATION, CONTENT_TYPE},
         Method, Request,
-    },
-    Router,
+    }, response::Html, Router
 };
 use db_service::get_connection_pool;
 use error::AppError;
+use templates::IndexTemplate;
 use tower_http::{
     cors::CorsLayer,
     services::ServeDir,
@@ -55,6 +57,7 @@ pub struct App {
 impl WebService for App {
     fn view_router(&self, state: AppState) -> axum::Router<AppState> {
         let router = Router::new()
+            .route("/", axum::routing::get(|| async { Html(IndexTemplate{}.render().map_err(|e| AppError::Askama(e)))}))
             .merge(user_service::UserService{}.view_router(state.clone()))
             .nest("/auth", self.auth_service.view_router(state.clone()))
             .with_state(state.clone());
@@ -112,7 +115,6 @@ impl App {
             )
             .with_state(self.state.clone())
             .nest_service("/assets", ServeDir::new("assets"));
-
         
         let listener = tokio::net::TcpListener::bind(&bind_address).await?; 
         tracing::info!("Listening on {}", bind_address);        

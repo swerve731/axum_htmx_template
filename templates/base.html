@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/assets/main.css">
+</head>
+{% block styles %}
+{%endblock %}
+{% block scripts %}
+{% endblock %}
+<body>
+    
+    <header>
+        <h1>Ahp</h1>
+        <ul id="menu">
+            <li><a href="/dashboard">Account</a></li>
+        </ul>
+    </header>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+</html>
+
