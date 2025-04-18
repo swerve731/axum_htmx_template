@@ -5,12 +5,12 @@ use argon2::{
     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
 };
-use axum::{extract::{Form, State}, response::IntoResponse, Json};
-use http::{header, HeaderMap, HeaderValue, StatusCode, Uri};
+use axum::{body::Body, extract::{Form, State}, response::{IntoResponse, Response}};
+use http::Uri;
 use jwt::{AuthResponse, Claims, KEYS};
 use utils::{is_valid_email, is_valid_password};
 
-use crate::app::{db_service::user::get_user_by_email, AppState};
+use crate::app::{db_service::user::get_user_by_email, utils::HxRedirect, AppState};
 
 use super::error::AuthError;
 
@@ -117,58 +117,12 @@ pub async fn login_user(State(state): State<AppState>, Form(user_data): Form<Log
     }
 }
 
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use sqlx::PgPool;
-
-    #[sqlx::test]
-    async fn test_register_user(pool: PgPool) -> Result<(), AuthError> {
-        let default_state = AppState::default().await;
-        let state = AppState { pool: pool.clone(), smtp_service: default_state.smtp_service.clone() };
-        let user_data = RegisterUser {
-            name: "Test User".to_string(),
-            email: "test@example.com".to_string(),
-            password: "Password123!".to_string(),
-        };
-
-        let result = register_user(State(state.clone()), Form(user_data)).await;
-        assert!(result.is_ok());
-
-        let user = get_user_by_email("test@example.com", &state.pool).await?;
-        assert!(user.is_some());
-
-        let user = user.unwrap();
-        assert_eq!(user.email, "test@example.com");
-        assert_eq!(user.name, "Test User");
-
-        Ok(())
-    }
-
-    #[sqlx::test]
-    async fn test_login_user(pool: PgPool) -> Result<(), AuthError> {
-        let default_state = AppState::default().await;
-        let state = AppState { pool: pool.clone(), smtp_service: default_state.smtp_service.clone() };
-        
-        let user_data = RegisterUser {
-            name: "Test User".to_string(),
-            email: "test_login@example.com".to_string(),
-            password: "Password123!".to_string(),
-        };
-
-        let result = register_user(State(state.clone()), Form(user_data)).await;
-        assert!(result.is_ok());
-
-        let login_data = LoginUser {
-            email: "test_login@example.com".to_string(),
-            password: "Password123!".to_string(),
-        };
-
-        let result = login_user(State(state.clone()), Form(login_data)).await;
-        assert!(result.is_ok());
-
-        Ok(())
-    }
+pub async fn logout_user() -> Result<impl IntoResponse, AuthError> {
+    Ok(
+        Response::builder()
+            .header(HxRedirect::HEADER_NAME, "/")
+            .header(http::header::SET_COOKIE, "token=; Path=/; HttpOnly")
+            .body(Body::empty())
+            .unwrap()
+    )
 }

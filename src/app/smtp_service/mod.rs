@@ -1,7 +1,5 @@
-use std::ops::Add;
-
 use lettre::{
-    message::{header::ContentType, Mailbox, MessageBuilder}, transport::smtp::{authentication::Credentials, commands::Mail, Error}, Address, Message, SmtpTransport, Transport
+    message::{Mailbox, MessageBuilder}, transport::smtp::{authentication::Credentials, Error}, Address, Message, SmtpTransport, Transport
 };
 
 
@@ -10,7 +8,7 @@ pub struct SmtpService {
     credentials: Credentials,
     pub noreply_email: Address,
     host: String,
-    port: u16,
+    _port: u16,
     sender_name: String,
 }
 
@@ -39,7 +37,7 @@ impl SmtpService {
             credentials,
             noreply_email,
             host,
-            port,
+            _port:port,
             sender_name
          }
     }

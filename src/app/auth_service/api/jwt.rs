@@ -1,14 +1,13 @@
 use std::sync::LazyLock;
 
 use axum::{
-    body::Body, extract::{FromRequestParts, State}, http::{header, request::Parts, HeaderMap, StatusCode, Uri}, response::{IntoResponse, Redirect, Response}, RequestPartsExt
+    body::Body, extract::FromRequestParts, http::{header, request::Parts, StatusCode, Uri}, response::{IntoResponse, Response},
 };
-use axum_extra::extract::cookie::{Cookie, CookieJar};
-use jsonwebtoken::{decode, EncodingKey, DecodingKey, Validation};
-use lettre::transport::smtp::commands::Auth;
+use axum_extra::extract::cookie::Cookie;
+use jsonwebtoken::{EncodingKey, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 
-use crate::app::auth_service::error::AuthError;
+use crate::app::{auth_service::error::AuthError, utils::HxRedirect};
 
 pub static KEYS: LazyLock<Keys> = LazyLock::new(|| {
     let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
@@ -102,13 +101,18 @@ impl IntoResponse for AuthResponse {
             .path("/")
             .http_only(true)
             .to_string();
-
+        
         Response::builder()
+            .header(HxRedirect::HEADER_NAME, self.redirect_uri.to_string())
             .header(header::SET_COOKIE, cookie) // Use the constant for clarity
-            .header("HX-redirect", self.redirect_uri.to_string())
-            .header("Location", self.redirect_uri.to_string())
-            .status(StatusCode::TEMPORARY_REDIRECT)
             .body(Body::empty())
             .unwrap()
+
+        // HxRedirect::to(self.redirect_uri.to_string())
+        //     .response_builder()
+        //     .header(header::SET_COOKIE, cookie)
+        //     .body(Body::empty())
+        //     .unwrap_or((StatusCode::INTERNAL_SERVER_ERROR, "could not build response").into_response())
+
     }
 }

@@ -4,6 +4,7 @@ pub mod error;
 pub mod smtp_service;
 pub mod user_service;
 pub mod templates;
+pub mod utils;
 
 use askama::Template;
 use axum::{

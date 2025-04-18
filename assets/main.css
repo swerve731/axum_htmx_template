@@ -46,6 +46,7 @@ input, button {
     border-radius: 5px;
 }
 
+
 input {
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -58,8 +59,14 @@ button {
     color: white;
     border: none;
     cursor: pointer;
+    font-weight: 600;
 }
 
 #response-error {
     color: crimson;
+}
+
+.bg-red {
+    background-color: crimson;
+    color: white;
 }

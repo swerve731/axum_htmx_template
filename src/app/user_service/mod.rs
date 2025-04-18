@@ -6,7 +6,7 @@ use sqlx::types::Uuid;
 
 use crate::app::{auth_service::error::AuthError, db_service::user::get_user_by_id};
 
-use super::{auth_service::api::jwt::Claims, db_service::user::User, AppState, WebService};
+use super::{auth_service::api::jwt::Claims, AppState, WebService};
 
 pub mod templates;
 

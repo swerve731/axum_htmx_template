@@ -1,7 +1,5 @@
-use std::os::linux::raw::stat;
 
 use axum::response::IntoResponse;
-use http::status;
 
 #[derive(derive_more::From, Debug)]
 pub enum AuthError {
