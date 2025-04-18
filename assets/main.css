@@ -9,6 +9,9 @@ body {
     background-color: #f5f5f5;
 }
 
+a {
+    color:steelblue;
+}
 .form-card {
     background-color: white;
     border-radius: 8px;
@@ -55,4 +58,8 @@ button {
     color: white;
     border: none;
     cursor: pointer;
+}
+
+#response-error {
+    color: crimson;
 }

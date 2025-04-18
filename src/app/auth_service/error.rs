@@ -1,4 +1,7 @@
+use std::os::linux::raw::stat;
+
 use axum::response::IntoResponse;
+use http::status;
 
 #[derive(derive_more::From, Debug)]
 pub enum AuthError {
@@ -13,6 +16,7 @@ pub enum AuthError {
         min_length: usize,
         is_long_enough: bool,
     },
+    NoToken,
     InvalidToken,
     #[from]
     Sqlx(sqlx::Error),
@@ -109,6 +113,9 @@ impl IntoResponse for AuthError {
                 let body = "Internal server error".to_string();
                 (status, body)
             },
+            AuthError::NoToken => {
+                return axum::response::Redirect::to("/auth/login").into_response();
+            }
         };
 
         (status, body).into_response()

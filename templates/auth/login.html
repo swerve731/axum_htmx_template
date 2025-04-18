@@ -1,11 +1,5 @@
 {% extends "base.html" %}
 
-{% block styles %}
-<style>
-
-</style>
-{% endblock %}
-
 {% block scripts %}
 <script>
 
@@ -15,7 +9,7 @@
 {% block content %}
     <div class="form-card"  hx-ext="response-targets">
         <h1>Login</h1>
-        <form hx-post="/api/auth/login" hx-target="#response-ok" hx-target-*="#response-error" hx-swap="innerHTML" hx-trigger="submit">
+        <form hx-post="/api/auth/login" hx-target="#response-ok" hx-target-*="#response-error" hx-swap="innerHTML">
             <span>
                 <label for="email">Email: </label>
                 <input type="email" id="email" name="email" required>
@@ -26,8 +20,9 @@
             </span>
             <button type="submit">Login</button>
         </form>
+        <p>Don't have an account? <a href="/auth/register">Register.</a></p>
         <div id="response-ok"></div>
-        <div id="response-error">err</div>
+        <div id="response-error"></div>
     </div>
     
 {% endblock %}
