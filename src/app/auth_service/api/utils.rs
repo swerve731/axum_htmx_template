@@ -1,3 +1,7 @@
+use core::str;
+
+use sqlx::{pool, types::Uuid};
+
 use crate::app::auth_service::error::AuthError;
 
 pub fn is_valid_password(password: &str) -> Result<bool, AuthError> {
@@ -33,3 +37,4 @@ pub fn is_valid_email(email: &str) -> Result<bool, AuthError> {
     } 
     Err(AuthError::InvalidEmail)
 }
+

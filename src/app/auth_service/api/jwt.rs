@@ -1,7 +1,7 @@
 use std::sync::LazyLock;
 
 use axum::{
-    body::Body, extract::FromRequestParts, http::{header, request::Parts, StatusCode, Uri}, response::{IntoResponse, Response},
+    body::Body, extract::FromRequestParts, http::{header, request::Parts, Uri}, response::{IntoResponse, Response},
 };
 use axum_extra::extract::cookie::Cookie;
 use jsonwebtoken::{EncodingKey, DecodingKey, Validation};
@@ -32,6 +32,7 @@ impl Keys {
 pub struct Claims {
     pub user_id: String,
     pub exp: usize,
+    pub is_main_claims: bool //this is so it does not grab the EmailLoginClaims
 }
 
 impl Claims {
@@ -43,6 +44,7 @@ impl Claims {
         Self {
             user_id,
             exp: expiration_time.timestamp() as usize,
+            is_main_claims: true
         }
     }
 }

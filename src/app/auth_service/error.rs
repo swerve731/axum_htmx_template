@@ -16,6 +16,9 @@ pub enum AuthError {
     },
     NoToken,
     InvalidToken,
+    FailedToCreateEmailToken,
+    PasswordsDontMatch,
+
     #[from]
     Sqlx(sqlx::Error),
 
@@ -31,7 +34,14 @@ pub enum AuthError {
     #[from]
     Http(http::Error),
 
-    InternalServer
+    InternalServer,
+
+    #[from]
+    Smtp(crate::app::smtp_service::error::SmtpError),
+
+    #[from]
+    Askama(askama::Error),
+    
 }
 
 impl IntoResponse for AuthError {
@@ -108,11 +118,37 @@ impl IntoResponse for AuthError {
             },
             AuthError::InternalServer => {
                 let status = axum::http::StatusCode::INTERNAL_SERVER_ERROR;
+                tracing::error!("URGENT: Internal server error");
                 let body = "Internal server error".to_string();
                 (status, body)
             },
             AuthError::NoToken => {
                 return axum::response::Redirect::to("/auth/login").into_response();
+            },
+            AuthError::FailedToCreateEmailToken => {
+                let status = axum::http::StatusCode::INTERNAL_SERVER_ERROR;
+                tracing::error!("URGENT: Failed to create email token");
+                let body = "Failed to create email token".to_string();
+
+                (status, body)
+            },
+            AuthError::Smtp(err) => {
+                let status = axum::http::StatusCode::INTERNAL_SERVER_ERROR;
+                tracing::error!("URGENT: SMTP error: {:?}", err);
+                let body = format!("Emailing error");
+                (status, body)
+            },
+            AuthError::Askama(err) => {
+                let status = axum::http::StatusCode::INTERNAL_SERVER_ERROR;
+                tracing::error!("URGENT: Askama error: {:?}", err);
+                let body = format!("Rendering error");
+                (status, body)
+            },
+            AuthError::PasswordsDontMatch => {
+                let status = axum::http::StatusCode::BAD_REQUEST;
+                tracing::debug!("Passwords dont match");
+                let body = format!("Passwords dont match");
+                (status, body)
             }
         };
 

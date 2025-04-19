@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="form-card"  hx-ext="response-targets">
+    <div class="form-card"  
         <h1>Register</h1>
         <form hx-post="/api/auth/register" hx-target="#response-ok" hx-target-*="#response-error" hx-swap="innerHTML">
             <span>

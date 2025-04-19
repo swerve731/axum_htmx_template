@@ -1,7 +1,8 @@
 use lettre::{
-    message::{Mailbox, MessageBuilder}, transport::smtp::{authentication::Credentials, Error}, Address, Message, SmtpTransport, Transport
+    message::{self, Mailbox, MessageBuilder}, transport::smtp::authentication::Credentials, Address, Message, SmtpTransport, Transport
 };
-
+pub mod error;
+use error::SmtpError;
 
 #[derive(Clone)]
 pub struct SmtpService {
@@ -11,6 +12,10 @@ pub struct SmtpService {
     _port: u16,
     sender_name: String,
 }
+
+
+
+
 
 
 impl SmtpService {
@@ -43,7 +48,7 @@ impl SmtpService {
     }
 
 
-    pub fn send(&self, message: Message) -> Result<(), Error>{
+    pub fn send_message(&self, message: Message) -> Result<(), SmtpError>{
         let relay = SmtpTransport::relay(&self.host)?;
 
         let mailer = relay.credentials(self.credentials.clone()).build();
@@ -52,10 +57,22 @@ impl SmtpService {
         Ok(())
     } 
 
-    pub fn default_message_builder(&self) -> Result<MessageBuilder, Error> {
-        let builder = Message::builder()
-            .from(Mailbox::new(Some(self.sender_name.clone()), self.noreply_email.clone()));
 
-        Ok(builder)
+    pub fn create_message(&self, body: String, reciever_email: String, reciever_name: String,subject: String) -> Result<Message,  SmtpError> {
+   //     .to(format!("Eoin <eoinmitchell39@proton.me>").parse().unwrap())
+    //     .subject("Test Email")
+    //     .header(lettre::message::header::ContentType::TEXT_PLAIN)
+    //     .body(String::from("This is a test email from lettre."))
+    //     .unwrap();
+
+        let message = Message::builder()
+            .from(Mailbox::new(Some(self.sender_name.clone()), self.noreply_email.clone()))
+            .to(Mailbox::new(Some(reciever_name),  reciever_email.parse()?))
+            .subject(subject)
+            .body(body)?;
+
+
+        Ok(message)
+
     }
 }

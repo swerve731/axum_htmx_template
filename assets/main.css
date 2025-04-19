@@ -42,6 +42,8 @@ form {
 
 
 input, button {
+    font-family: monospace; 
+    /* the font family is monospace since it ensures perfectly centered text because everything is the same vertical spacing */
     padding: 10px 20px;
     border-radius: 5px;
 }

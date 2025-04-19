@@ -1,0 +1,16 @@
+
+<h1>Enter Code</h1>
+<p>An email has been sent to {{email}}, Your code will expire in {{expire_time}} minutes </p>
+<form hx-post="/api/auth/email-code" hx-target="#response-target" hx-target-*="#response-error" hx-swap="innerHTML">
+    <div class="code-inputs">
+        <input type="text" maxlength="1" inputmode="text" pattern="[A-Za-z0-9]" class="code-char" />
+        <input type="text" maxlength="1" inputmode="text" pattern="[A-Za-z0-9]" class="code-char" />
+        <input type="text" maxlength="1" inputmode="text" pattern="[A-Za-z0-9]" class="code-char" />
+        <input type="text" maxlength="1" inputmode="text" pattern="[A-Za-z0-9]" class="code-char" />
+        <input type="text" maxlength="1" inputmode="text" pattern="[A-Za-z0-9]" class="code-char" />
+        <input type="text" maxlength="1" inputmode="text" pattern="[A-Za-z0-9]" class="code-char" />
+      </div>
+      <input type="hidden" name="code" id="combined-code" />
+    <button>Confirm</button>
+</form>
+<div id="response-error"></div>

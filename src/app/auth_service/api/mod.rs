@@ -11,9 +11,9 @@ use jwt::{AuthResponse, Claims, KEYS};
 use utils::{is_valid_email, is_valid_password};
 
 use crate::app::{db_service::user::get_user_by_email, utils::HxRedirect, AppState};
+pub mod email_login;
 
 use super::error::AuthError;
-
 
 
 #[derive(serde::Deserialize)]
@@ -22,6 +22,7 @@ pub struct RegisterUser {
     pub email: String,
     pub password: String,
 }
+
 
 
 

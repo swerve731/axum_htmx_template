@@ -14,6 +14,8 @@ pub enum AppError {
     Sqlx(sqlx::Error),
     #[from]
     Askama(askama::Error),
+    #[from]
+    Smtp(super::smtp_service::error::SmtpError),
 }
 
 
@@ -37,6 +39,10 @@ impl IntoResponse for AppError {
             },
             AppError::Askama(e) => {
                 tracing::error!("Askama error: {}", e);
+                (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error").into_response()
+            },
+            AppError::Smtp(e) => {
+                tracing::error!("Smtp error: {:?}", e);
                 (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error").into_response()
             }
         }

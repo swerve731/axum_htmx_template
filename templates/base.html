@@ -8,10 +8,7 @@
     <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/htmx-ext-response-targets@2.0.2" integrity="sha384-NtTh9TBZ2X/pFpfsVvQOjSsYWmjmqG6h5ioQWVAe2/j3AuTHRmfqvoqp+iOed+I0" crossorigin="anonymous"></script>
 </head>
-{% block styles %}
-{%endblock %}
-{% block scripts %}
-{% endblock %}
+
 <body hx-ext="response-targets">
     
     <header>
@@ -27,3 +24,7 @@
 </body>
 </html>
 
+{% block style %}
+{%endblock %}
+{% block script %}
+{% endblock %}

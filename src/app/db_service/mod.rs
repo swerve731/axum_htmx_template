@@ -1,4 +1,5 @@
 pub mod user;
+pub mod email_verification_tokens;
 
 use std::time::Duration;
 

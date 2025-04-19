@@ -1,3 +1,4 @@
+use argon2::password_hash::ParamsString;
 use askama::Template;
 
 
@@ -15,4 +16,17 @@ pub struct RegisterTemplate {}
 #[template(path = "auth/reset_password.html")]
 pub struct ResetPasswordTemplate {}
 
+#[derive(Template, askama_derive_axum::IntoResponse)]
+#[template(path = "auth/email_login.html")]
+pub struct EmailLoginTemplate {}
 
+#[derive(Template)]
+#[template(path = "auth/email_code.html")]
+pub struct EmailCodeTemplate {
+    pub email: String,
+    pub expire_time: String
+}
+
+#[derive(Template, askama_derive_axum::IntoResponse)]
+#[template(path = "auth/change_password.html")]
+pub struct ChangePasswordTemplate {}
