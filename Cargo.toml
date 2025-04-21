@@ -1,0 +1,30 @@
+[package]
+name = "core_lib"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+argon2 = "0.5.3"
+askama = "0.13.0"
+async-trait = "0.1.88"
+axum = { version = "0.8.3", features = ["macros", "tracing"] }
+axum-core = "0.5.2"
+axum-extra = { version = "0.10.1", features = ["cookie", "typed-header"] }
+chrono = "0.4.40"
+derive_more = { version = "2.0.1", features = ["full"] }
+dotenvy = "0.15.7"
+http = "1.3.1"
+jsonwebtoken = "9.3.1"
+lettre = { version = "0.11.15", default-features = false, features = ["builder", "serde", "smtp-transport", "tokio1", "tokio1-native-tls", "tracing"] }
+rand = "0.9.1"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+sqlx = { version = "0.8.3", features = ["chrono", "derive", "macros", "postgres", "runtime-tokio", "uuid"] }
+tokio = { version = "1.44.2", features = ["full"] }
+toml = "0.8.20"
+tower = "0.5.2"
+tower-cookies = "0.11.0"
+tower-http = { version = "0.6.2", features = ["cors", "full", "trace"] }
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+uuid = { version = "1.16.0", features = ["serde", "v4"] }

@@ -1,0 +1,107 @@
+
+<h1>Enter Code</h1>
+<p>An email has been sent to {{email}}, Your code will expire in {{expire_time}} minutes </p>
+<form hx-post="/api/auth/code-login" hx-target="#response-target" hx-target-*="#response-error" hx-swap="innerHTML">
+    <div class="code-inputs">
+        <input type="text" maxlength="1" inputmode="text" pattern="[A-Za-z0-9]" class="code-char" />
+        <input type="text" maxlength="1" inputmode="text" pattern="[A-Za-z0-9]" class="code-char" />
+        <input type="text" maxlength="1" inputmode="text" pattern="[A-Za-z0-9]" class="code-char" />
+        <input type="text" maxlength="1" inputmode="text" pattern="[A-Za-z0-9]" class="code-char" />
+        <input type="text" maxlength="1" inputmode="text" pattern="[A-Za-z0-9]" class="code-char" />
+        <input type="text" maxlength="1" inputmode="text" pattern="[A-Za-z0-9]" class="code-char" />
+      </div>
+      <input type="hidden" name="code" id="combined-code" />
+    <button>Confirm</button>
+</form>
+<div id="response-error"></div>
+
+<style>
+
+    .code-inputs {
+        display: flex;
+        /* gap: 10px; */
+        justify-content: space-between;
+        /* margin-top: 20px; */
+        max-width: 100%;
+    }
+
+    .code-char {
+        font-family: monospace;
+        padding: 0;
+        max-width: 15%;
+        height: 50px;
+        font-size: 24px;
+        text-align: center;
+        border: 2px solid #ccc;
+        transition: border-color 0.3s;
+        line-height: 49px;
+        line-height: 100px;
+        box-sizing: border-box;
+    }
+
+    .code-char:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+
+
+
+</style>
+
+<script>
+    function initializeCodeInputs() {
+        const codeInputs = document.querySelectorAll('.code-char');
+        const hiddenInput = document.getElementById('combined-code');
+
+        //this is for the api since it only takes in one field from the form
+        //this will combine all the inputs
+        function updateHiddenInput() {
+            const code = Array.from(codeInputs)
+            .map(input => input.value.toUpperCase())
+            .join('');
+            if (hiddenInput) {
+            hiddenInput.value = code;
+            }
+        }
+
+        codeInputs.forEach((input, index) => {
+            input.addEventListener('input', () => {
+            input.value = input.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+            updateHiddenInput();
+            if (input.value && index < codeInputs.length - 1) {
+                codeInputs[index + 1].focus();
+            }
+            });
+
+            input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && !input.value && index > 0) {
+                codeInputs[index - 1].focus();
+            }
+            });
+
+            input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pasteData = e.clipboardData.getData('text').trim().replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+            if (pasteData.length === codeInputs.length) {
+                pasteData.split('').forEach((char, i) => {
+                if (codeInputs[i]) {
+                    codeInputs[i].value = char.toUpperCase();
+                }
+                });
+                updateHiddenInput();
+                codeInputs[codeInputs.length - 1].focus();
+            }
+            });
+        });
+
+        // Initialize hidden input on page load
+        updateHiddenInput();
+    }
+
+    // Initialize on initial page load
+    document.addEventListener('DOMContentLoaded', initializeCodeInputs);
+
+    // Re-initialize after HTMX swaps in new content
+    document.body.addEventListener('htmx:afterSwap', initializeCodeInputs);
+</script>

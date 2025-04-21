@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One Time Code</title>
+</head>
+<body>
+    <div class="card">
+        <span>
+            <h1>Your one-time code: </h1>
+            <p>This code will expire in {{expire_time}} minutes.</p>
+        </span>
+        
+        <div class="code">{{code}}</div>
+    </div>
+
+</body>
+</html>
+
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .card {
+        border-radius: 8px;
+        background-color: white;
+        padding: 10px 20px;
+        box-shadow: 0 0 8px rgb(0, 0, 0, .1);
+        span {
+            line-height: .9;
+            p {
+                font-style: italic;
+                color: #222;
+            }
+        }
+    }
+    body{
+        background-color: whitesmoke;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* justify-content: center; */
+        text-align: left;
+        padding: 50px;
+        gap: 20px;
+    }
+    .code {
+        margin-top: 25px !important;
+        font-size: 10vw;
+        letter-spacing: 2rem;
+        font-weight: 600;
+        background-color: rgba(128, 128, 128, 0.291);
+        margin: auto;
+        max-width: fit-content;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-family: monospace !important;
+    }
+</style>

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+</script>
+{% endblock %}
+
+{% block content %}
+    <div class="form-card">
+        <h1>Register</h1>
+        <form hx-post="/api/auth/register" hx-target="#response-ok" hx-target-*="#response-error" hx-swap="innerHTML">
+            <span>
+                <label for="name">Name: </label>
+                <input type="text" id="name" name="name" required></label>
+            </span>
+            <span>
+                <label for="email">Email: </label>
+                <input type="email" id="email" name="email" required>
+            </span>
+            <span>
+                <label for="password">Password: </label>
+                <input type="password" id="password" name="password" required>
+            </span>
+            <button type="submit">Register</button>
+        </form>
+        <p>Already have an account? <a href="/auth/login">Login.</a></p>
+        <div id="response-ok"></div>
+        <div id="response-error"></div>
+    </div>
+    
+{% endblock %}

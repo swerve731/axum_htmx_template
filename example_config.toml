@@ -1,0 +1,18 @@
+# ahp - AxumHtmxPostgres
+
+[database]
+url = "postgres://myuser:mypassword@localhost/myahp" # also change the docker dompose if you change this
+
+[app]
+app_name = "My App" 
+origin = "http://127.0.0.1:8000"      
+bind_address = "127.0.0.1:8000"        
+jwt_secret = "your_jwt_secret_key"
+
+[smtp]
+host = "live.smtp.mailtrap.io"
+username = "your smtp service username"
+password = "your mailtrap password"
+port = 587
+from_no_reply = "hello@demomailtrap.co"
+sender_name = "No Reply"

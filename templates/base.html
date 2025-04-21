@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/static/styles/main.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/htmx-ext-response-targets@2.0.2" integrity="sha384-NtTh9TBZ2X/pFpfsVvQOjSsYWmjmqG6h5ioQWVAe2/j3AuTHRmfqvoqp+iOed+I0" crossorigin="anonymous"></script>
+    <script src="/static/scripts/main.js"></script>
+</head>
+
+<body hx-ext="response-targets">
+    
+    <header>
+        <h1>Ahp</h1>
+        <ul id="menu">
+            <li onclick="toggle_nav_active()"><a href="/dashboard">Account</a></li>
+        </ul>
+        <div id="ham" onclick="toggle_nav_active()">
+            <span></span>
+            <span></span>
+        </div>
+    </header>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+</html>
+
+{% block style %}
+{%endblock %}
+{% block script %}
+{% endblock %}
